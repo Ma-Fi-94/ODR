@@ -4,7 +4,7 @@ from scipy.odr import *
 import random
 import tqdm as tqdm
 
-def odr_bs(f, x, y, beta0, sx = None, sy = None, n_bs = 100):
+def fit_odr(f, x, y, beta0, sx = None, sy = None):
     # Explicitly doing what ODR does internally anyway,
     # so that resampling later doesn't cause problems
     if sx is None:
@@ -12,11 +12,25 @@ def odr_bs(f, x, y, beta0, sx = None, sy = None, n_bs = 100):
     if sy is None:
         sy = np.ones_like(y)
         
+        
     # Fit model f to data (x,y) with initial guess beta0 via ODR
     model = Model(f)
     data = RealData(x, y, sx=sx, sy=sy)
     odr = ODR(data, model, beta0=beta0).run()
     
+    # Reurn best fit
+    return odr
+    
+
+def bs_odr(f, x, y, beta0, sx = None, sy = None, n_bs = 100):
+    # Explicitly doing what ODR does internally anyway,
+    # so that resampling later doesn't cause problems
+    if sx is None:
+        sx = np.ones_like(x)
+    if sy is None:
+        sy = np.ones_like(y)
+        
+
     # Bootstrapping
     bs_samples = []
     bs_odrs = []
@@ -31,7 +45,7 @@ def odr_bs(f, x, y, beta0, sx = None, sy = None, n_bs = 100):
         bs_samples.append(bs_sample)
         bs_odrs.append(bs_odr)
         bs_params.append(bs_odr.beta)
-        
+    
     
     # Find bootstrap prediction for every x value
     y_predictions = []
@@ -45,6 +59,7 @@ def odr_bs(f, x, y, beta0, sx = None, sy = None, n_bs = 100):
         y_predictions.append(current_predictions)
 
     
-    return odr, bs_params, y_predictions
+    # Reurn list of all parameter sets, and list of all predictions
+    return bs_params, y_predictions
     
     
