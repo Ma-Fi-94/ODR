@@ -30,6 +30,9 @@ def bs_odr(f, x, y, beta0, sx = None, sy = None, n_bs = 100):
     if sy is None:
         sy = np.ones_like(y)
         
+    # Fit model f
+    model = Model(f)
+        
 
     # Bootstrapping
     bs_samples = []
